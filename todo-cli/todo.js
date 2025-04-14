@@ -37,7 +37,7 @@ const todoList = () => {
       // Format the To-Do list here, and return the output string
       // as per the format given above.
       let displayableList = list.map((item) => {
-        return `[${item.completed ? 'x' : ' '}] ${item.title} ${item.dueDate===today ? '' : `(${item.dueDate})`}`
+        return `[${item.completed ? 'x' : ' '}] ${item.title} ${item.dueDate===today ? '' : `${item.dueDate}`}`
       })
       return displayableList.join('\n')
 
