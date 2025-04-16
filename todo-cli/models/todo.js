@@ -74,7 +74,14 @@ module.exports = (sequelize, DataTypes) => {
 
     displayableString() {
       const checkbox = this.completed ? "[x]" : "[ ]";
+      const today = new Date().toISOString().split("T")[0];
+      if (this.dueDate === today) {
+        // Exclude the date for todos due today
+        return `${this.id}. ${checkbox} ${this.title.trim()}`;
+      }
+      // Include the date for overdue or due later todos
       return `${this.id}. ${checkbox} ${this.title.trim()} ${this.dueDate}`;
+      
     }
   }
 
