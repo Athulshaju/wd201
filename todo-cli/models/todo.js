@@ -28,11 +28,6 @@ module.exports = (sequelize, DataTypes) => {
       console.log(dueLaterList);
       console.log("\n");
 
-      console.log("Completed past Due-Time");
-      const completedPastDueTime = await this.completedPastDueTime();
-      const completedList = completedPastDueTime.map((todo) => todo.displayableString()).join("\n");
-      console.log(completedList);
-      console.log("\n");
     }
 
     
@@ -42,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       return await Todo.findAll({
         where: {
           dueDate: { [Op.lt]: today }, // Less than today
-          completed: false,
+      
         },
         logging: console.log,
         order: [["dueDate", "ASC"]],
