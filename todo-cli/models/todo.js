@@ -26,7 +26,16 @@ module.exports = (sequelize, DataTypes) => {
       const dueLaterTodos = await this.dueLater();
       const dueLaterList = dueLaterTodos.map((todo) => todo.displayableString()).join("\n");
       console.log(dueLaterList);
+      console.log("\n");
+
+      console.log("Completed past Due-Time");
+      const completedPastDueTime = await this.completedPastDueTime();
+      const completedList = completedPastDueTime.map((todo) => todo.displayableString()).join("\n");
+      console.log(completedList);
+      console.log("\n");
     }
+
+    
 
     static async overdue() {
       const today = new Date().toISOString().split("T")[0]; // Correct date format
@@ -71,7 +80,17 @@ module.exports = (sequelize, DataTypes) => {
         throw new Error(`Todo with ID ${id} not found`);
       }
     }
-
+    static async completedPastDueTime() {
+      const today = new Date().toISOString().split("T")[0]; // Correct date format
+      return await Todo.findAll({
+        where: {
+          dueDate: { [Op.lt]: today }, // Less than today
+          completed: true,
+        },
+        logging: console.log,
+        order: [["dueDate", "ASC"]],
+      });
+    }
     displayableString() {
       const checkbox = this.completed ? "[x]" : "[ ]";
       const today = new Date().toISOString().split("T")[0];
