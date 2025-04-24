@@ -8,11 +8,21 @@ app.use(bodyParser.json());
 app.get("/todos",async(request,response)=>{
     //response.send("Hello World");
     console.log("Todo list");
-    const todoItem=await todo.getAllTodos();
-    response.json(todoItem);
+    const todoItems=await Todo.getAllTodos();
+    return response.json(todoItems);
     
 
 })
+
+app.get("/todos/:id", async function (request, response) {
+    try {
+      const todo = await Todo.findByPk(request.params.id);
+      return response.json(todo);
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  });
 
 
 app.post("/todos",async (request,response)=>{
@@ -43,8 +53,18 @@ app.put("/todos/:id/markAsCompleted", async (request,response)=>{
     }
 })
 
-app.delete("/todos/:id",(request,response)=>{
+app.delete("/todos/:id", async (request,response)=>{
     console.log("todo deleted",request.params.id);
+    const todo = await Todo.findByPk(request.params.id)
+    try{
+        await todo.destroy();
+        return response.json({success:true})
+
+    } 
+    catch(error){
+        console.log(error);
+        return response.status(422).json(error);
+    }
 })
 
 module.exports=app; 
