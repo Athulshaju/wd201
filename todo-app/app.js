@@ -5,6 +5,7 @@ const Sequelize = require("sequelize");
 const bodyParser = require("body-parser");
 const path=require("path");
 app.use(bodyParser.json());
+app.use(express.urlencoded({extended:true}));
 
 const { Op } = Sequelize;
 
@@ -63,7 +64,7 @@ app.post("/todos",async (request,response)=>{
     console.log("Creating Todo",request.body);
     try{
         const todo=await Todo.addTodo({title: request.body.title,dueDate: request.body.dueDate,completed: false})
-        return response.json(todo);
+        return response.redirect("/");
     }
     catch(error){
         console.log(error);
