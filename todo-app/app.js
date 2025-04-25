@@ -1,19 +1,36 @@
 const express=require("express");
 const app=express();
 const {Todo} = require("./models")
+const Sequelize = require("sequelize");
 const bodyParser = require("body-parser");
 const path=require("path");
 app.use(bodyParser.json());
 
+const { Op } = Sequelize;
+
 
 app.set("view engine","ejs");
 app.get("/",async (request,response)=>{
-    const allTodos=await Todo.getAllTodos();
+    const today = new Date().toISOString().split("T")[0];
+
+    const overdueTodos= await Todo.findAll({
+        // eslint-disable-next-line no-undef
+        where:{ dueDate: {[Op.lt]: today},completed:false},
+    })
+
+    const dueTodayTodos= await Todo.findAll({
+        where:{ dueDate: today,completed:false},
+    })
+    const dueLaterTodos= await Todo.findAll({
+        // eslint-disable-next-line no-undef
+        where:{ dueDate: {[Op.gt]: today},completed:false},
+    })
+
     if(request.accepts("html")){
-        response.render("index",{allTodos});
+        response.render("index",{overdueTodos,dueTodayTodos,dueLaterTodos});
     }
     else {
-        response.json(allTodos);
+        response.json(overdueTodos,dueTodayTodos,dueLaterTodos);
     }
     
 
