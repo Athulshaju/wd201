@@ -4,41 +4,41 @@ const {Todo} = require("./models")
 const Sequelize = require("sequelize");
 const bodyParser = require("body-parser");
 const path=require("path");
+var csrf = require("tiny-csrf");
+var cookieParser = require('cookie-parser');
+
+
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
+app.use(cookieParser("secret"));
+// eslint-disable-next-line no-undef
+app.use(csrf("this_should_be_32_character_long", ["POST", "PUT", "DELETE"]));
+// eslint-disable-next-line no-undef
+app.use(express.static(path.join(__dirname, "public")));
 
+// eslint-disable-next-line no-unused-vars
 const { Op } = Sequelize;
 
 
 app.set("view engine","ejs");
 app.get("/",async (request,response)=>{
-    const today = new Date().toISOString().split("T")[0];
-
-    const overdueTodos= await Todo.findAll({
-        // eslint-disable-next-line no-undef
-        where:{ dueDate: {[Op.lt]: today},completed:false},
-    })
-
-    const dueTodayTodos= await Todo.findAll({
-        where:{ dueDate: today,completed:false},
-    })
-    const dueLaterTodos= await Todo.findAll({
-        // eslint-disable-next-line no-undef
-        where:{ dueDate: {[Op.gt]: today},completed:false},
-    })
+    const overdue= await Todo.overdueTodos();
+    const dueToday= await Todo.dueTodayTodos();
+    const dueLater= await Todo.dueLaterTodos();
+    const completedTodo = await Todo.completedTodos();
 
     if(request.accepts("html")){
-        response.render("index",{overdueTodos,dueTodayTodos,dueLaterTodos});
+        console.log("Generated CSRF Token:", request.csrfToken());
+        response.render("index",{overdue,dueToday,dueLater,completedTodo,csrfToken: request.csrfToken()});
     }
     else {
-        response.json(overdueTodos,dueTodayTodos,dueLaterTodos);
+        response.json({overdue,dueToday,dueLater,completedTodo});
     }
     
 
 })
 
-// eslint-disable-next-line no-undef
-app.use(express.static(path.join(__dirname, "public")));
+
 
 app.get("/todos",async(request,response)=>{
     //response.send("Hello World");
@@ -61,9 +61,10 @@ app.get("/todos/:id", async function (request, response) {
 
 
 app.post("/todos",async (request,response)=>{
-    console.log("Creating Todo",request.body);
+    console.log("Received CSRF Token:", request.body._csrf);
+    console.log("Expected CSRF Token:", request.csrfToken());
     try{
-        const todo=await Todo.addTodo({title: request.body.title,dueDate: request.body.dueDate,completed: false})
+        await Todo.addTodo({title: request.body.title,dueDate: request.body.dueDate,completed: false})
         return response.redirect("/");
     }
     catch(error){
@@ -74,12 +75,12 @@ app.post("/todos",async (request,response)=>{
 
 })
 
-app.put("/todos/:id/markAsCompleted", async (request,response)=>{
+app.put("/todos/:id", async (request,response)=>{
     console.log("todo updated",request.params.id);
     const todo=await Todo.findByPk(request.params.id)
     try{
         
-        const updatedTodo = await todo.markAsCompleted()
+        const updatedTodo = await todo.setCompletionStatus(request.body.completed);
         return response.json(updatedTodo);
     }
     catch(error){
@@ -90,9 +91,8 @@ app.put("/todos/:id/markAsCompleted", async (request,response)=>{
 
 app.delete("/todos/:id", async (request,response)=>{
     console.log("todo deleted",request.params.id);
-    const todo = await Todo.findByPk(request.params.id)
     try{
-        await todo.destroy();
+        await Todo.remove(request.params.id)
         return response.json({success:true})
 
     } 
