@@ -26,19 +26,19 @@ module.exports = (sequelize, DataTypes) => {
 
     static overdueTodos(){
       return this.findAll({
-        where: { dueDate: { [Op.lt]: new Date().toISOString().split("T")[0] } }
+        where: { dueDate: { [Op.lt]: new Date().toISOString().split("T")[0] }, completed: false }
       })
     }
 
     static dueTodayTodos(){
       return this.findAll({
-        where: { dueDate: { [Op.eq]: new Date().toISOString().split("T")[0] } }
+        where: { dueDate: { [Op.eq]: new Date().toISOString().split("T")[0] },completed: false }
       })
     }
 
     static dueLaterTodos(){
       return this.findAll({
-        where: { dueDate: { [Op.gt]: new Date().toISOString().split("T")[0] } }
+        where: { dueDate: { [Op.gt]: new Date().toISOString().split("T")[0] },completed: false }
       })
     }
 
