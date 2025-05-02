@@ -14,7 +14,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     "completed": isCompleted,
-                    "_csrf": document.querySelector('input[name="_csrf"]').value, // Include CSRF token
+                    "_csrf": token // Include CSRF token
                 })
             })
                 .then((res) => {

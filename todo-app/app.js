@@ -29,7 +29,7 @@ app.get("/",async (request,response)=>{
 
     if(request.accepts("html")){
         console.log("Generated CSRF Token:", request.csrfToken());
-        response.render("index",{overdue,dueToday,dueLater,completedTodo,csrfToken: request.csrfToken()});
+        response.render("index",{title:"Todo Application",overdue,dueToday,dueLater,completedTodo,csrfToken: request.csrfToken()});
     }
     else {
         response.json({overdue,dueToday,dueLater,completedTodo});
