@@ -20,35 +20,35 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
-    static addTodo({title,dueDate}){
-      return this.create({title:title,dueDate:dueDate,completed:false})
+    static addTodo({title,dueDate,userId}){
+      return this.create({title:title,dueDate:dueDate,completed:false,userId})
     }
 
-    setCompletionStatus(status){
-      return this.update({completed:status})
+    setCompletionStatus(status,userId){
+      return this.update({completed:status,userId})
     }
 
-    static overdueTodos(){
+    static overdueTodos(userId){
       return this.findAll({
-        where: { dueDate: { [Op.lt]: new Date().toISOString().split("T")[0] }, completed: false }
+        where: { dueDate: { [Op.lt]: new Date() }, completed: false,userId }
       })
     }
 
-    static dueTodayTodos(){
+    static dueTodayTodos(userId){
       return this.findAll({
-        where: { dueDate: { [Op.eq]: new Date().toISOString().split("T")[0] },completed: false }
+        where: { dueDate: { [Op.eq]: new Date() },completed: false,userId }
       })
     }
 
-    static dueLaterTodos(){
+    static dueLaterTodos(userId){
       return this.findAll({
-        where: { dueDate: { [Op.gt]: new Date().toISOString().split("T")[0] },completed: false }
+        where: { dueDate: { [Op.gt]: new Date() },completed: false,userId }
       })
     }
 
-    static completedTodos(){
+    static completedTodos(userId){
       return this.findAll({
-        where: { completed: true }
+        where: { completed: true,userId }
       })
     }
 
@@ -56,10 +56,11 @@ module.exports = (sequelize, DataTypes) => {
       return this.findAll({order:[["id","ASC"]]})
     }
 
-    static async remove(id){
+    static async remove(id,userId){
       return this.destroy({
         where: {
-          id
+          id,
+          userId
         }
       }) 
     }
@@ -67,9 +68,16 @@ module.exports = (sequelize, DataTypes) => {
 
   }
   Todo.init({
-    title: DataTypes.STRING,
-    dueDate: DataTypes.DATEONLY,
-    completed: DataTypes.BOOLEAN
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate:{
+        notNull: true,
+        len: 5
+      }
+    },
+    dueDate: { type: DataTypes.DATEONLY,},
+    completed:{type: DataTypes.BOOLEAN,defaultValue: false},
   }, {
     sequelize,
     modelName: 'Todo',
